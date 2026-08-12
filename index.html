@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sri Y N College, Narasapuram - AI Assistant</title>
+    <!-- Google Fonts: Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for modern icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #1e3a8a;
+            --primary-dark: #1e293b;
+            --accent-color: #3b82f6;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #334155;
+            --text-light: #64748b;
+            --border-color: #e2e8f0;
+            --bot-bubble: #f1f5f9;
+            --user-bubble: #1e3a8a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header Styling */
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+        }
+
+        .brand-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .college-logo {
+            width: 42px;
+            height: 42px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            font-size: 20px;
+            font-weight: 700;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .brand-title h1 {
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .brand-title p {
+            font-size: 12px;
+            opacity: 0.85;
+            font-weight: 300;
+        }
+
+        /* Navigation Buttons */
+        .nav-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background: white;
+            color: var(--primary-color);
+        }
+
+        /* Main Container Views */
+        .main-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .view-section {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-color);
+            transition: transform 0.3s ease-in-out;
+            transform: translateX(100%);
+            visibility: hidden;
+        }
+
+        .view-section.active {
+            transform: translateX(0);
+            visibility: visible;
+        }
+
+        /* Chatbot Interface View */
+        .chat-messages-area {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .message {
+            max-width: 80%;
+            display: flex;
+            flex-direction: column;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.bot-message {
+            align-self: flex-start;
+        }
+
+        .message.user-message {
+            align-self: flex-end;
+        }
+
+        .bubble {
+            padding: 12px 16px;
+            border-radius: 14px;
+            font-size: 14px;
+            line-height: 1.5;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .bot-message .bubble {
+            background-color: var(--card-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            border-top-left-radius: 2px;
+        }
+
+        .user-message .bubble {
+            background-color: var(--user-bubble);
+            color: white;
+            border-top-right-radius: 2px;
+        }
+
+        .timestamp {
+            font-size: 10px;
+            color: var(--text-light);
+            margin-top: 4px;
+            padding: 0 4px;
+        }
+
+        .bot-message .timestamp {
+            align-self: flex-start;
+        }
+
+        .user-message .timestamp {
+            align-self: flex-end;
+        }
+
+        /* Typing Animation */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 4px 8px;
+            align-items: center;
+        }
+
+        .typing-indicator span {
+            width: 6px;
+            height: 6px;
+            background-color: var(--text-light);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.0); }
+        }
+
+        /* Quick Questions Chips Area */
+        .quick-questions-container {
+            padding: 8px 16px;
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            background: white;
+            border-top: 1px solid var(--border-color);
+            white-space: nowrap;
+            scrollbar-width: none; /* Firefox */
+        }
+
+        .quick-questions-container::-webkit-scrollbar {
+            display: none; /* Chrome/Safari */
+        }
+
+        .quick-btn {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: var(--accent-color);
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .quick-btn:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        /* Chat Input Area */
+        .chat-input-area {
+            padding: 12px 16px;
+            background: white;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 10px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            outline: none;
+            font-size: 14px;
+            transition: border-color 0.2s;
+            background: var(--bg-color);
+        }
+
+        .chat-input:focus {
+            border-color: var(--accent-color);
+            background: white;
+        }
+
+        .action-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+
+        .action-btn:hover {
+            background: var(--accent-color);
+        }
+
+        .clear-btn {
+            background: #f1f5f9;
+            color: var(--text-light);
+        }
+
+        .clear-btn:hover {
+            background: #e2e8f0;
+            color: var(--text-main);
+        }
+
+        /* College Info Section View */
+        .info-content-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .info-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            border: 1px solid var(--border-color);
+        }
+
+        .info-card h3 {
+            color: var(--primary-color);
+            font-size: 18px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-card p, .info-card li {
+            font-size: 13.5px;
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        .info-card ul {
+            padding-left: 20px;
+            margin-top: 8px;
+        }
+
+        .loading-spinner {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-light);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .brand-title h1 { font-size: 14px; }
+            .brand-title p { display: none; }
+            .nav-btn { padding: 6px 10px; font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Section -->
+    <header>
+        <div class="brand-section">
+            <div class="college-logo">YN</div>
+            <div class="brand-title">
+                <h1>Sri Y N College</h1>
+                <p>Narsapur, Andhra Pradesh • AI Assistant</p>
+            </div>
+        </div>
+        <div class="nav-buttons">
+            <button class="nav-btn active" onclick="switchView('chat', this)">
+                <i class="fa-solid fa-comments"></i> Home
+            </button>
+            <button class="nav-btn" onclick="switchView('info', this)">
+                <i class="fa-solid fa-building-columns"></i> College Info
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        
+        <!-- VIEW 1: Chatbot Interface -->
+        <div id="chat-view" class="view-section active">
+            <div id="chatMessages" class="chat-messages-area">
+                <!-- Welcome Message -->
+                <div class="message bot-message">
+                    <div class="bubble">
+                        Namaste! Welcome to <strong>Sri Y N College, Narasapuram</strong> AI Assistant. 🙏<br>
+                        You can ask me anything about courses, admissions, fee structures, departments, or college location in English, Telugu, or mixed language (e.g., <em>"courses em unnayi?"</em> or <em>"where is the college?"</em>).
+                    </div>
+                    <span class="timestamp" id="welcome-time">Just now</span>
+                </div>
+            </div>
+
+            <!-- Quick Suggestions Horizontal Scroll -->
+            <div class="quick-questions-container">
+                <button class="quick-btn" onclick="sendQuickQuery('Courses')">Courses</button>
+                <button class="quick-btn" onclick="sendQuickQuery('Admissions')">Admissions</button>
+                <button class="quick-btn" onclick="sendQuickQuery('Fees')">Fees</button>
+                <button class="quick-btn" onclick="sendQuickQuery('Departments')">Departments</button>
+                <button class="quick-btn" onclick="sendQuickQuery('College Address')">College Address</button>
+                <button class="quick-btn" onclick="sendQuickQuery('Contact')">Contact</button>
+                <button class="quick-btn" onclick="sendQuickQuery('Facilities')">Facilities</button>
+                <button class="quick-btn" onclick="sendQuickQuery('Latest Updates')">Latest Updates</button>
+            </div>
+
+            <!-- Chat Input Area -->
+            <div class="chat-input-area">
+                <button class="action-btn clear-btn" onclick="clearChat()" title="Clear Chat">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+                <input type="text" id="userInput" class="chat-input" placeholder="Ask anything about Sri Y N College..." onkeypress="handleKeyPress(event)">
+                <button class="action-btn" onclick="sendMessage()" title="Send Message">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- VIEW 2: College Information Section -->
+        <div id="info-view" class="view-section">
+            <div id="collegeInfoContainer" class="info-content-area">
+                <div class="loading-spinner">
+                    <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+                    <p style="margin-top: 10px;">Loading verified college data...</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Set timestamp for initial greeting
+        document.getElementById('welcome-time').innerText = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        // Switch between Chat and College Info views
+        function switchView(viewName, btnElement) {
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            btnElement.classList.add('active');
+
+            document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+
+            if (viewName === 'chat') {
+                document.getElementById('chat-view').classList.add('active');
+            } else if (viewName === 'info') {
+                document.getElementById('info-view').classList.add('active');
+                fetchCollegeInfo();
+            }
+        }
+
+        // Handle enter key in input field
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Send Quick Question pill click automatically
+        function sendQuickQuery(queryText) {
+            document.getElementById('userInput').value = queryText;
+            sendMessage();
+        }
+
+        // Clear Chat Conversation
+        function clearChat() {
+            const chatContainer = document.getElementById('chatMessages');
+            chatContainer.innerHTML = `
+                <div class="message bot-message">
+                    <div class="bubble">
+                        Chat cleared. How else can I help you regarding Sri Y N College today?
+                    </div>
+                    <span class="timestamp">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                </div>
+            `;
+        }
+
+        // Send Message function interacting with Backend POST /api/chat
+        async function sendMessage() {
+            const inputField = document.getElementById('userInput');
+            const messageText = inputField.value.trim();
+            if (!messageText) return;
+
+            const chatContainer = document.getElementById('chatMessages');
+            const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            // Append User Message
+            const userMsgHTML = `
+                <div class="message user-message">
+                    <div class="bubble">${escapeHTML(messageText)}</div>
+                    <span class="timestamp">${currentTime}</span>
+                </div>
+            `;
+            chatContainer.insertAdjacentHTML('beforeend', userMsgHTML);
+            inputField.value = '';
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            // Append Typing Indicator
+            const typingId = 'typing-' + Date.now();
+            const typingHTML = `
+                <div id="${typingId}" class="message bot-message">
+                    <div class="bubble">
+                        <div class="typing-indicator">
+                            <span></span><span></span><span></span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            chatContainer.insertAdjacentHTML('beforeend', typingHTML);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: messageText })
+                });
+
+                const data = await response.json();
+                
+                // Remove typing indicator
+                document.getElementById(typingId).remove();
+
+                const botReply = data.success && data.answer ? data.answer : "I couldn't find verified information about that. Please contact Sri Y N College for confirmation.";
+
+                const botMsgHTML = `
+                    <div class="message bot-message">
+                        <div class="bubble">${formatBotAnswer(botReply)}</div>
+                        <span class="timestamp">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
+                `;
+                chatContainer.insertAdjacentHTML('beforeend', botMsgHTML);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            } catch (error) {
+                document.getElementById(typingId).remove();
+                const errorMsgHTML = `
+                    <div class="message bot-message">
+                        <div class="bubble">Connection error occurred. Please verify your connection or try again.</div>
+                        <span class="timestamp">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
+                `;
+                chatContainer.insertAdjacentHTML('beforeend', errorMsgHTML);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+        }
+
+        // Fetch college static/dynamic info for Info View via GET /api/college
+        async function fetchCollegeInfo() {
+            const container = document.getElementById('collegeInfoContainer');
+            try {
+                const response = await fetch('/api/college');
+                const data = await response.json();
+
+                if (data.success && data.info) {
+                    const info = data.info;
+                    container.innerHTML = `
+                        <div class="info-card">
+                            <h3><i class="fa-solid fa-university"></i> About Sri Y N College</h3>
+                            <p>${info.about || 'Sri Yerramilli Narayana Murthy College (Autonomous) is located in Narsapur, West Godavari District, Andhra Pradesh. Accredited with NAAC A+ Grade in its 4th cycle and granted extended autonomous status by UGC.'}</p>
+                        </div>
+                        <div class="info-card">
+                            <h3><i class="fa-solid fa-location-dot"></i> Location & Address</h3>
+                            <p><strong>Address:</strong> ${info.address || 'Sri Y N College, Narsapur - 534275, West Godavari District, Andhra Pradesh, India.'}</p>
+                        </div>
+                        <div class="info-card">
+                            <h3><i class="fa-solid fa-graduation-cap"></i> Popular Courses Offered</h3>
+                            <ul>
+                                ${info.courses ? info.courses.map(c => `<li>${c}</li>`).join('') : '<li>B.Sc (Data Science, Computer Science, AI, etc.)</li><li>B.Com (General & Computers)</li><li>BBA, BCA, BA</li><li>PG Courses (MBA, MCA, M.Sc, M.A)</li>'}
+                            </ul>
+                        </div>
+                        <div class="info-card">
+                            <h3><i class="fa-solid fa-building"></i> Key Departments</h3>
+                            <p>${info.departments || 'Computer Science, Artificial Intelligence & Electronics, Management Studies, Commerce, Aquaculture, Sciences, Arts & Humanities.'}</p>
+                        </div>
+                        <div class="info-card">
+                            <h3><i class="fa-solid fa-clipboard-check"></i> Admissions Process</h3>
+                            <p>${info.admissions || 'Undergraduate admissions follow the OAMDC system (APSCHE web counseling). Postgraduate admissions require valid APICET or APPGCET ranks.'}</p>
+                        </div>
+                        <div class="info-card">
+                            <h3><i class="fa-solid fa-wifi"></i> Campus Facilities</h3>
+                            <p>${info.facilities || 'Advanced AI & Quantum Innovation Centre, Central Library & Reading Room, Separate Hostels for Boys and Women, Sports & Games, NCC/NSS Wings, Health Centre, RO Water Plant.'}</p>
+                        </div>
+                        <div class="info-card">
+                            <h3><i class="fa-solid fa-phone-volume"></i> Contact Details</h3>
+                            <p><strong>Landline UG:</strong> ${info.contact?.ug_phone || '08814-273246'}</p>
+                            <p><strong>Email UG:</strong> ${info.contact?.ug_email || 'principal@sriyncollege.org'}</p>
+                            <p><strong>Official Website:</strong> <a href="${info.website || 'https://sriyncollege.org'}" target="_blank">${info.website || 'https://sriyncollege.org'}</a></p>
+                        </div>
+                        <div class="info-card">
+                            <h3><i class="fa-solid fa-bullhorn"></i> Latest Updates</h3>
+                            <p>${info.latest_updates || 'UGC has extended Autonomous Status for 10 years (2024-34). NAAC A+ Grade accredited. AI & Quantum Innovation Centre launched.'}</p>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = `<div class="info-card"><p>Could not load complete college details right now.</p></div>`;
+                }
+            } catch (err) {
+                container.innerHTML = `<div class="info-card"><p>Failed to connect to backend server for college info.</p></div>`;
+            }
+        }
+
+        // Utility: Escape HTML to avoid injection
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+
+        // Utility: Format bot answer line breaks and links nicely
+        function formatBotAnswer(text) {
+            return text.replace(/\n/g, '<br>');
+        }
+    </script>
+</body>
+</html>
